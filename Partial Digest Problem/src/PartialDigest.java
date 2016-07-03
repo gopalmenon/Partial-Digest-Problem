@@ -9,64 +9,66 @@ import java.util.Iterator;
  *
  */
 public class PartialDigest {
-	
-	ArrayList<Integer> partialDigest;
-	Integer totalWidth;
-	ArrayList<Integer> positionOfPoints;
-	boolean reconstructionSuccessful;
+	private	Integer totalWidth;
+	private	ArrayList<Integer> reconstructedPositionOfPoints;
+	private	boolean reconstructionSuccessful;
 
 	public PartialDigest(ArrayList<Integer> partialDigest) {
 		
-		this.partialDigest = partialDigest;
-		this.positionOfPoints = new ArrayList<Integer>();
+		ArrayList<Integer> positionOfPoints = new ArrayList<Integer>();
+		this.reconstructedPositionOfPoints = null;
 		this.reconstructionSuccessful = false;
 		
-		totalWidth = Collections.max(this.partialDigest);
-		this.partialDigest.remove(totalWidth);
-		this.positionOfPoints.add(Integer.valueOf(0));
-		this.positionOfPoints.add(totalWidth);
+		totalWidth = Collections.max(partialDigest);
+		partialDigest.removeIf(s -> s.compareTo(totalWidth) == 0);
+		positionOfPoints.add(Integer.valueOf(0));
+		positionOfPoints.add(totalWidth);
 		
-		place();
+		place(partialDigest, positionOfPoints);
 	
 	}
 	
-	private void place() {
+	private void place(ArrayList<Integer> partialDigest, ArrayList<Integer> positionOfPoints) {
 		
-		if (this.partialDigest.isEmpty()) {
+		if (partialDigest.isEmpty()) {
+			this.reconstructedPositionOfPoints = positionOfPoints;
 			this.reconstructionSuccessful = true;
 			return;
 		}
 		
-		Integer nextMaximumLength = Collections.max(this.partialDigest);
-		
-		ArrayList<Integer> distancesFromPositionOfPoints = getDistancesFromPositionOfPoints(nextMaximumLength);
-		if (this.partialDigest.containsAll(distancesFromPositionOfPoints)) {
-			this.positionOfPoints.add(nextMaximumLength);
-			this.partialDigest.removeAll(distancesFromPositionOfPoints);
-			place();
-			this.positionOfPoints.removeIf(s -> s.compareTo(nextMaximumLength) == 0);
-			this.partialDigest.addAll(distancesFromPositionOfPoints);
+		Integer nextMaximumLength = Collections.max(partialDigest);
+		ArrayList<Integer> distancesFromPositionOfPoints = getDistancesFromPositionOfPoints(nextMaximumLength, positionOfPoints);
+		if (partialDigest.containsAll(distancesFromPositionOfPoints)) {
+			positionOfPoints.add(nextMaximumLength);
+			partialDigest.removeAll(distancesFromPositionOfPoints);
+			place(partialDigest, positionOfPoints);
+			if (!reconstructionSuccessful) {
+				positionOfPoints.removeIf(s -> s.compareTo(nextMaximumLength) == 0);
+				partialDigest.addAll(distancesFromPositionOfPoints);
+			}
 		}
 		
 		Integer nextMaximumLengthComplement = Integer.valueOf(Math.abs(this.totalWidth.intValue() - nextMaximumLength.intValue()));
-		distancesFromPositionOfPoints = getDistancesFromPositionOfPoints(nextMaximumLengthComplement);
-		if (this.partialDigest.containsAll(distancesFromPositionOfPoints)) {
-			this.positionOfPoints.add(nextMaximumLengthComplement);
-			this.partialDigest.removeAll(distancesFromPositionOfPoints);
-			place();
-			this.positionOfPoints.removeIf(s -> s.compareTo(nextMaximumLengthComplement) == 0);
-			this.partialDigest.addAll(distancesFromPositionOfPoints);
+		distancesFromPositionOfPoints = getDistancesFromPositionOfPoints(nextMaximumLengthComplement, positionOfPoints);
+		if (partialDigest.containsAll(distancesFromPositionOfPoints)) {
+			positionOfPoints.add(nextMaximumLengthComplement);
+			partialDigest.removeAll(distancesFromPositionOfPoints);
+			place(partialDigest, positionOfPoints);
+			if (!reconstructionSuccessful) {
+				positionOfPoints.removeIf(s -> s.compareTo(nextMaximumLengthComplement) == 0);
+				partialDigest.addAll(distancesFromPositionOfPoints);
+			}
 		}
 		
 		return;
 		
 	}
 	
-	private ArrayList<Integer> getDistancesFromPositionOfPoints(Integer nextMaximumLength) {
+	private ArrayList<Integer> getDistancesFromPositionOfPoints(Integer nextMaximumLength, ArrayList<Integer> positionOfPoints) {
 		
 		ArrayList<Integer> distancesFromPositionOfPoints = new ArrayList<Integer>();
 		
-		Iterator<Integer> positionOfPointsIterator = this.positionOfPoints.iterator();
+		Iterator<Integer> positionOfPointsIterator = positionOfPoints.iterator();
 		Integer nextPoint = null, nextDistance = null;
 		while (positionOfPointsIterator.hasNext()) {
 			nextPoint = positionOfPointsIterator.next();
@@ -82,14 +84,14 @@ public class PartialDigest {
 
 	public Collection<Integer> getPositionOfPoints() throws Exception {
 		if (isReconstructionSuccessful()) {
-			return Collections.unmodifiableCollection(positionOfPoints);
+			return Collections.unmodifiableCollection(this.reconstructedPositionOfPoints);
 		} else {
 			throw new Exception("Reconstruction was not successful!!!");
 		}
 	}
 
 	public boolean isReconstructionSuccessful() {
-		return reconstructionSuccessful;
+		return this.reconstructionSuccessful;
 	}
 	
 }
