@@ -40,10 +40,12 @@ public class PartialDigest {
 		ArrayList<Integer> distancesFromPositionOfPoints = getDistancesFromPositionOfPoints(nextMaximumLength, positionOfPoints);
 		if (partialDigest.containsAll(distancesFromPositionOfPoints)) {
 			positionOfPoints.add(nextMaximumLength);
-			partialDigest.removeAll(distancesFromPositionOfPoints);
+			for (Integer distance : distancesFromPositionOfPoints) {
+				partialDigest.remove(distance);
+			}
 			place(partialDigest, positionOfPoints);
 			if (!reconstructionSuccessful) {
-				positionOfPoints.removeIf(s -> s.compareTo(nextMaximumLength) == 0);
+				positionOfPoints.remove(nextMaximumLength);
 				partialDigest.addAll(distancesFromPositionOfPoints);
 			}
 		}
@@ -52,10 +54,12 @@ public class PartialDigest {
 		distancesFromPositionOfPoints = getDistancesFromPositionOfPoints(nextMaximumLengthComplement, positionOfPoints);
 		if (partialDigest.containsAll(distancesFromPositionOfPoints)) {
 			positionOfPoints.add(nextMaximumLengthComplement);
-			partialDigest.removeAll(distancesFromPositionOfPoints);
+			for (Integer distance : distancesFromPositionOfPoints) {
+				partialDigest.remove(distance);
+			}
 			place(partialDigest, positionOfPoints);
 			if (!reconstructionSuccessful) {
-				positionOfPoints.removeIf(s -> s.compareTo(nextMaximumLengthComplement) == 0);
+				positionOfPoints.remove(nextMaximumLengthComplement);
 				partialDigest.addAll(distancesFromPositionOfPoints);
 			}
 		}
